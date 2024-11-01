@@ -11,9 +11,8 @@ function App() {
     'Jacob': 'baddiebj'
   };
 
-  // API base URL - adjust this based on your deployment
   const API_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://nnn-it6j.onrender.com'  // Replace with your deployed API URL
+    ? 'https://nnn-it6j.onrender.com'
     : 'http://localhost:3001';
 
   useEffect(() => {

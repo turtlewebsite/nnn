@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-// Enable CORS for your GitHub Pages domain
 app.use(cors({
   origin: 'https://turtlewebsite.github.io',
   methods: ['GET', 'POST'],
@@ -11,7 +10,6 @@ app.use(cors({
 
 app.use(express.json());
 
-// Add a basic health check endpoint
 app.get('/', (req, res) => {
   res.send('Status API is running');
 });
