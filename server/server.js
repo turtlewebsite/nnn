@@ -10,7 +10,7 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-const dataPath = path.join(__dirname, 'data.json');
+const dataPath = path.join(__dirname, '..', 'public/data.json');
 
 // Endpoint to get status data
 app.get('/api/status', (req, res) => {
