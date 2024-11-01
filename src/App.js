@@ -14,7 +14,7 @@ function App() {
   // Fetch initial status data from the server
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('http://localhost:5000/api/status');
+      const response = await fetch('/data.json');
       const data = await response.json();
       setStatus(data);
     };
@@ -31,7 +31,7 @@ function App() {
     console.log('Updated Status:', updatedStatus);
   
     // Send updated status to the backend
-    const response = await fetch('http://localhost:5000/api/status', {
+    const response = await fetch('/api/status', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
