@@ -11,26 +11,20 @@ function App() {
     'Jacob': 'baddiebj'
   };
 
-  // Use the correct base path for GitHub Pages
-  const basePath = '/nnn'; // Your repository name
+  // API base URL - adjust this based on your deployment
+  const API_BASE_URL = process.env.NODE_ENV === 'production' 
+    ? 'https://your-api-url.com'  // Replace with your deployed API URL
+    : 'http://localhost:3001';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Use the correct path for GitHub Pages
-        const response = await fetch(`${process.env.NODE_ENV === 'production' ? basePath : ''}/data.json`);
+        const response = await fetch(`${API_BASE_URL}/api/status`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
         const data = await response.json();
-        
-        // Try to get data from localStorage first
-        const storedData = localStorage.getItem('statusData');
-        if (storedData) {
-          setStatus(JSON.parse(storedData));
-        } else {
-          setStatus(data);
-        }
+        setStatus(data);
       } catch (error) {
         console.error('Error fetching data:', error);
         // Initialize with default data if fetch fails
@@ -41,24 +35,34 @@ function App() {
           { name: 'Jacob', status: 'Good' }
         ];
         setStatus(defaultData);
-        localStorage.setItem('statusData', JSON.stringify(defaultData));
       }
     };
 
     fetchData();
   }, []);
 
-  const handleChangeStatus = (name, newStatus) => {
-    const updatedStatus = status.map((item) =>
-      item.name === name ? { ...item, status: newStatus } : item
-    );
-    setStatus(updatedStatus);
-    
-    // Save to localStorage
-    localStorage.setItem('statusData', JSON.stringify(updatedStatus));
+  const handleChangeStatus = async (name, newStatus) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      const { data } = await response.json();
+      setStatus(data);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update status. Please try again.');
+    }
   };
 
-  // Rest of your component remains the same...
   const handleSubmit = (e) => {
     e.preventDefault();
     const user = Object.keys(passwords).find(user => passwords[user] === password);
@@ -69,7 +73,6 @@ function App() {
       if (userStatus) {
         const newStatus = userStatus.status === 'Good' ? 'Bad' : 'Good';
         handleChangeStatus(user, newStatus);
-        alert(`${user}'s status updated to ${newStatus}!`);
       } else {
         alert('User not found in status list.');
       }
