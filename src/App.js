@@ -9,72 +9,78 @@ function App() {
     'Gus': 'garenlover',
     'Logan': 'childtoucher123',
     'Jacob': 'baddiebj'
-  }; // Example passwords
+  };
 
-  // Fetch initial status data from the server
+  // Use the correct base path for GitHub Pages
+  const basePath = '/nnn'; // Your repository name
+
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('/data.json');
-      const data = await response.json();
-      setStatus(data);
+      try {
+        // Use the correct path for GitHub Pages
+        const response = await fetch(`${process.env.NODE_ENV === 'production' ? basePath : ''}/data.json`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const data = await response.json();
+        
+        // Try to get data from localStorage first
+        const storedData = localStorage.getItem('statusData');
+        if (storedData) {
+          setStatus(JSON.parse(storedData));
+        } else {
+          setStatus(data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Initialize with default data if fetch fails
+        const defaultData = [
+          { name: 'Shreyes', status: 'Good' },
+          { name: 'Gus', status: 'Good' },
+          { name: 'Logan', status: 'Good' },
+          { name: 'Jacob', status: 'Good' }
+        ];
+        setStatus(defaultData);
+        localStorage.setItem('statusData', JSON.stringify(defaultData));
+      }
     };
 
     fetchData();
   }, []);
 
-  const handleChangeStatus = async (name, newStatus) => {
+  const handleChangeStatus = (name, newStatus) => {
     const updatedStatus = status.map((item) =>
       item.name === name ? { ...item, status: newStatus } : item
     );
     setStatus(updatedStatus);
-  
-    console.log('Updated Status:', updatedStatus);
-  
-    // Send updated status to the backend
-    const response = await fetch('/api/status', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, newStatus }), // Send updated data
-    });
-  
-    if (response.ok) {
-      const message = await response.text();
-      console.log(message); // Log success message
-    } else {
-      console.error('Error updating status in backend');
-    }
+    
+    // Save to localStorage
+    localStorage.setItem('statusData', JSON.stringify(updatedStatus));
   };
-  
-const handleSubmit = (e) => {
+
+  // Rest of your component remains the same...
+  const handleSubmit = (e) => {
     e.preventDefault();
     const user = Object.keys(passwords).find(user => passwords[user] === password);
 
-    console.log('User:', user); // Log the user found
-    console.log('Current Status:', status); // Log the current status array
-
     if (user) {
-        const userStatus = status.find(item => item.name === user);
-        
-        console.log('User Status:', userStatus); // Log the user status object
-
-        if (userStatus) {
-            // Toggle status between 'Good' and 'Bad'
-            const newStatus = userStatus.status === 'Good' ? 'Bad' : 'Good';
-            handleChangeStatus(user, newStatus);
-            alert(`${user}'s status updated to ${newStatus}!`);
-        } else {
-            alert('User not found in status list.');
-        }
+      const userStatus = status.find(item => item.name === user);
+      
+      if (userStatus) {
+        const newStatus = userStatus.status === 'Good' ? 'Bad' : 'Good';
+        handleChangeStatus(user, newStatus);
+        alert(`${user}'s status updated to ${newStatus}!`);
+      } else {
+        alert('User not found in status list.');
+      }
     } else {
-        alert('Invalid password. Please try again.');
+      alert('Invalid password. Please try again.');
     }
-    setPassword(''); // Clear input after submission
-};
+    setPassword('');
+  };
 
   return (
-    <div style={{ textAlign: 'center' ,marginTop: '60px'}}>
+    <div style={{ textAlign: 'center', marginTop: '60px' }}>
       <h1 className="title">Status of Nuts</h1>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
         {status.map((item, index) => (
